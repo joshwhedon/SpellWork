@@ -45,9 +45,11 @@ namespace SpellWork.Forms
 
             _cbAdvancedFilter1.SetStructFields<SpellInfoHelper>();
             _cbAdvancedFilter2.SetStructFields<SpellInfoHelper>();
+            _cbEffectFilter.SetStructFields<SpellEffectEntry>();
 
             _cbAdvancedFilter1CompareType.SetEnumValuesDirect<CompareType>(true);
             _cbAdvancedFilter2CompareType.SetEnumValuesDirect<CompareType>(true);
+            _cbEffectFilterCompareType.SetEnumValuesDirect<CompareType>(true);
 
             ConnStatus();
         }
@@ -227,15 +229,19 @@ namespace SpellWork.Forms
             // additional filtert
             var advVal1 = _tbAdvancedFilter1Val.Text;
             var advVal2 = _tbAdvancedFilter2Val.Text;
+            var advVal3 = _tbEffectFilterVal.Text;
 
             var field1 = (MemberInfo)_cbAdvancedFilter1.SelectedValue;
             var field2 = (MemberInfo)_cbAdvancedFilter2.SelectedValue;
+            var field3 = (MemberInfo)_cbEffectFilter.SelectedValue;
 
             var use1Val = advVal1 != string.Empty;
             var use2Val = advVal2 != string.Empty;
+            var use3Val = advVal3 != string.Empty;
 
             var field1Ct = (CompareType)_cbAdvancedFilter1CompareType.SelectedIndex;
             var field2Ct = (CompareType)_cbAdvancedFilter2CompareType.SelectedIndex;
+            var field3Ct = (CompareType)_cbEffectFilterCompareType.SelectedIndex;
 
             _spellList = (from spell in DBC.DBC.SpellInfoStore.Values
                           where
@@ -245,7 +251,10 @@ namespace SpellWork.Forms
                               (!bTarget1 || spell.HasTargetA((Targets)fTarget1)) &&
                               (!bTarget2 || spell.HasTargetB((Targets)fTarget2)) &&
                               (!use1Val || spell.CreateFilter(field1, advVal1, field1Ct)) &&
-                              (!use2Val || spell.CreateFilter(field2, advVal2, field2Ct))
+                              (!use2Val || spell.CreateFilter(field2, advVal2, field2Ct)) &&
+                              (!use3Val || (spell.Effects[0] != null && spell.Effects[0].CreateFilter(field3, advVal3, field3Ct)) 
+                                        || (spell.Effects[1] != null && spell.Effects[1].CreateFilter(field3, advVal3, field3Ct))
+                                        || (spell.Effects[2] != null && spell.Effects[2].CreateFilter(field3, advVal3, field3Ct)))
                           select spell).ToList();
 
             _lvSpellList.VirtualListSize = _spellList.Count();
